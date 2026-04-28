@@ -1,0 +1,54 @@
+@page "/burger"
+@using BurgerOrdering.App.Models
+@using BurgerOrdering.UI.Services
+@inject NavigationManager Nav
+@inject AppState AppState
+
+<h3>Build Your Burger</h3>
+
+<h4>Protein</h4>
+<select @bind="protein">
+    <option value="">Select</option>
+    <option value="Beef">Beef</option>
+    <option value="Steak">Steak</option>
+    <option value="Chicken">Chicken</option>
+</select>
+
+<h4>Cheese</h4>
+<select @bind="cheese">
+    <option value="">Select</option>
+    <option value="Cheddar">Cheddar</option>
+    <option value="American">American</option>
+    <option value="Swiss">Swiss</option>
+</select>
+
+<h4>Sauce</h4>
+<select @bind="sauce">
+    <option value="">Select</option>
+    <option value="Ketchup">Ketchup</option>
+    <option value="Mustard">Mustard</option>
+    <option value="BBQ">BBQ</option>
+</select>
+
+<br /><br />
+<button @onclick="Next">Next</button>
+
+@code {
+    string protein = "";
+    string cheese = "";
+    string sauce = "";
+
+    BurgerOrdering.App.Models.Burger burger = new BurgerOrdering.App.Models.Burger();
+
+    void Next()
+    {
+        burger.Protein = protein;
+        burger.Cheese = cheese;
+        burger.Sauce = sauce;
+
+        AppState.Order.Burger = burger;
+
+        Nav.NavigateTo("/sides");
+    }
+}
+}

@@ -1,0 +1,18 @@
+@page "/"
+@rendermode InteractiveServer
+@using BurgerOrdering.UI.Services
+@inject NavigationManager Nav
+@inject AppState AppState
+
+<h1>Olivia's Güd Burgers</h1>
+
+<p>You have: $@AppState.Customer.Balance</p>
+
+<button @onclick="@StartOrder">Start Order</button>
+
+@code {
+    void StartOrder()
+    {
+        Nav.NavigateTo("/burger");
+    }
+}

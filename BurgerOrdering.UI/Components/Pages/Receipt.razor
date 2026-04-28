@@ -1,0 +1,8 @@
+@page "/receipt"
+@using BurgerOrdering.UI.Services
+@inject AppState AppState
+
+<h2>Receipt</h2>
+
+<p>Total: $@AppState.Order.GetTotalPrice()</p>
+<p>Prep Time: @AppState.Order.GetTotalPrepTime() minutes</p>

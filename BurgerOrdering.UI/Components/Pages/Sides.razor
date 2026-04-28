@@ -1,0 +1,30 @@
+@page "/sides"
+@using BurgerOrdering.App.Models
+@using BurgerOrdering.UI.Services
+@inject NavigationManager Nav
+@inject AppState AppState
+
+<h3>Choose Sides</h3>
+
+<button @onclick="AddFries">Fries ($3)</button>
+<button @onclick="AddRings">Onion Rings ($4)</button>
+
+<br /><br />
+<button @onclick="Next">Next</button>
+
+@code {
+    void AddFries()
+    {
+        AppState.Order.Sides.Add(new Side("Fries", 3, 3));
+    }
+
+    void AddRings()
+    {
+        AppState.Order.Sides.Add(new Side("Onion Rings", 4, 4));
+    }
+
+    void Next()
+    {
+        Nav.NavigateTo("/dessert");
+    }
+}
