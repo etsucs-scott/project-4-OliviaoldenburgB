@@ -1,0 +1,476 @@
+@page "/"
+@rendermode RenderMode.InteractiveServer
+@using BurgerOrdering.App.Models
+@using BurgerOrdering.UI.Services
+@inject AppState AppState
+
+<div class="chat-wrapper">
+    <div class="top-bar">
+        <span class="restaurant-title"> Olivia's Güd Burgers</span>
+        <span class="balance-badge"> $@AppState.Customer.Balance.ToString("F2")</span>
+    </div>
+
+    <div class="chat-box">
+        @foreach (var msg in messages)
+        {
+            <div class="chat-msg @(msg.IsWaitress ? "from-waitress" : "from-customer")">
+                @if (msg.IsWaitress) { <span class="avatar"></span> }
+                <div class="bubble">@msg.Text</div>
+                @if (!msg.IsWaitress) { <span class="avatar"></span> }
+            </div>
+        }
+
+        @if (step == Step.Name)
+        {
+            <div class="reply-area">
+                <input class="name-input"
+                       value="@userName"
+                       @oninput="@(e => userName = e.Value?.ToString() ?? "")"
+                       placeholder="Type your name..." />
+                <button class="chat-btn" @onclick="SubmitName">Say Hello! </button>
+            </div>
+        }
+        else if (step == Step.AskTeacher)
+        {
+            <div class="reply-area">
+                <button class="chat-btn" @onclick="YesTeacher">Yes, I am </button>
+                <button class="chat-btn secondary" @onclick="NoTeacher">No, I'm not</button>
+            </div>
+        }
+        else if (step == Step.DrinkMenu)
+        {
+            <div class="paper-menu">
+                <div class="menu-title"> DRINK MENU</div>
+                <div class="menu-divider"></div>
+                @foreach (var item in drinkOptions)
+                {
+                    <label class="menu-row @(selectedDrink == item.Name ? "row-checked" : "")">
+                        <input type="radio" name="drink" checked="@(selectedDrink == item.Name)"
+                               @onchange="@(() => selectedDrink = item.Name)" />
+                        <span class="check-mark">@(selectedDrink == item.Name ? "✓" : " ")</span>
+                        <span class="item-label">@item.Name</span>
+                        <span class="leader"></span>
+                        <span class="item-price">@(item.Price == 0 ? "Free" : "$" + item.Price.ToString("F2"))</span>
+                    </label>
+                }
+                <div class="menu-divider"></div>
+                <button class="submit-menu-btn" @onclick="SubmitDrink"
+                        disabled="@(string.IsNullOrEmpty(selectedDrink))">✓ Submit Order</button>
+            </div>
+        }
+        else if (step == Step.BurgerMenu)
+        {
+            <div class="paper-menu">
+                <div class="menu-title"> BURGER MENU</div>
+
+                <div class="menu-section">BUN — select one</div>
+                <div class="menu-divider"></div>
+                @foreach (var item in bunOptions)
+                {
+                    <label class="menu-row @(selectedBun == item.Name ? "row-checked" : "")">
+                        <input type="radio" name="bun" checked="@(selectedBun == item.Name)"
+                               @onchange="@(() => selectedBun = item.Name)" />
+                        <span class="check-mark">@(selectedBun == item.Name ? "✓" : " ")</span>
+                        <span class="item-label">@item.Name</span>
+                        <span class="leader"></span>
+                        <span class="item-price">$@item.Price.ToString("F2")</span>
+                    </label>
+                }
+
+                <div class="menu-section">PROTEIN — select one</div>
+                <div class="menu-divider"></div>
+                @foreach (var item in proteinOptions)
+                {
+                    <label class="menu-row @(selectedProtein == item.Name ? "row-checked" : "")">
+                        <input type="radio" name="protein" checked="@(selectedProtein == item.Name)"
+                               @onchange="@(() => selectedProtein = item.Name)" />
+                        <span class="check-mark">@(selectedProtein == item.Name ? "✓" : " ")</span>
+                        <span class="item-label">@item.Name</span>
+                        <span class="leader"></span>
+                        <span class="item-price">$@item.Price.ToString("F2")</span>
+                    </label>
+                }
+
+                <div class="menu-section">CHEESE — select one (optional)</div>
+                <div class="menu-divider"></div>
+                @foreach (var item in cheeseOptions)
+                {
+                    <label class="menu-row @(selectedCheese == item.Name ? "row-checked" : "")">
+                        <input type="radio" name="cheese" checked="@(selectedCheese == item.Name)"
+                               @onchange="@(() => selectedCheese = item.Name)" />
+                        <span class="check-mark">@(selectedCheese == item.Name ? "✓" : " ")</span>
+                        <span class="item-label">@item.Name</span>
+                        <span class="leader"></span>
+                        <span class="item-price">$@item.Price.ToString("F2")</span>
+                    </label>
+                }
+
+                <div class="menu-section">ADD-ONS — check any</div>
+                <div class="menu-divider"></div>
+                @foreach (var item in addOnOptions)
+                {
+                    <label class="menu-row @(selectedAddOns.Contains(item.Name) ? "row-checked" : "")">
+                        <input type="checkbox" checked="@selectedAddOns.Contains(item.Name)"
+                               @onchange="@(() => ToggleAddOn(item.Name))" />
+                        <span class="check-mark">@(selectedAddOns.Contains(item.Name) ? "✓" : " ")</span>
+                        <span class="item-label">@item.Name</span>
+                        <span class="leader"></span>
+                        <span class="item-price">$@item.Price.ToString("F2")</span>
+                    </label>
+                }
+
+                <div class="menu-section">SAUCE — select one (optional)</div>
+                <div class="menu-divider"></div>
+                @foreach (var item in sauceOptions)
+                {
+                    <label class="menu-row @(selectedSauce == item.Name ? "row-checked" : "")">
+                        <input type="radio" name="sauce" checked="@(selectedSauce == item.Name)"
+                               @onchange="@(() => selectedSauce = item.Name)" />
+                        <span class="check-mark">@(selectedSauce == item.Name ? "✓" : " ")</span>
+                        <span class="item-label">@item.Name</span>
+                        <span class="leader"></span>
+                        <span class="item-price">@(item.Price == 0 ? "Free" : "$" + item.Price.ToString("F2"))</span>
+                    </label>
+                }
+
+                <div class="menu-divider"></div>
+                <button class="submit-menu-btn" @onclick="SubmitBurger"
+                        disabled="@(!CanSubmitBurger())">✓ Submit Order</button>
+            </div>
+        }
+        else if (step == Step.AskDessert)
+        {
+            <div class="reply-area">
+                <button class="chat-btn" @onclick="YesDessert">Yes please! </button>
+                <button class="chat-btn secondary" @onclick="NoDessert">No thanks </button>
+            </div>
+        }
+        else if (step == Step.DessertMenu)
+        {
+            <div class="paper-menu">
+                <div class="menu-title"> DESSERT MENU</div>
+                <div class="menu-divider"></div>
+                @foreach (var item in dessertOptions)
+                {
+                    <label class="menu-row @(selectedDessert == item.Name ? "row-checked" : "")">
+                        <input type="radio" name="dessert" checked="@(selectedDessert == item.Name)"
+                               @onchange="@(() => selectedDessert = item.Name)" />
+                        <span class="check-mark">@(selectedDessert == item.Name ? "✓" : " ")</span>
+                        <span class="item-label">@item.Name</span>
+                        <span class="leader"></span>
+                        <span class="item-price">$@item.Price.ToString("F2")</span>
+                    </label>
+                }
+                <div class="menu-divider"></div>
+                <button class="submit-menu-btn" @onclick="SubmitDessert"
+                        disabled="@(string.IsNullOrEmpty(selectedDessert))">✓ Submit Order</button>
+            </div>
+        }
+
+        @if (step == Step.ReviewReceipt || step == Step.OrderSubmitted)
+        {
+            <div class="receipt-card">
+                <div class="receipt-title"> YOUR RECEIPT</div>
+                <div class="receipt-divider"></div>
+                @if (AppState.Order.Drink != null)
+                {
+                    <div class="receipt-row">
+                        <span>🥤 @AppState.Order.Drink.Name</span>
+                        <span>@(AppState.Order.Drink.Price == 0 ? "Free" : "$" + AppState.Order.Drink.Price.ToString("F2"))</span>
+                    </div>
+                }
+                <div class="receipt-row">
+                    <span> @AppState.Order.Burger.Bun Bun</span>
+                    <span>$@BunPrice().ToString("F2")</span>
+                </div>
+                <div class="receipt-row">
+                    <span>&nbsp;&nbsp;&nbsp;@AppState.Order.Burger.Protein Patty</span>
+                    <span>$@ProteinPrice().ToString("F2")</span>
+                </div>
+                @if (!string.IsNullOrEmpty(AppState.Order.Burger.Cheese))
+                {
+                    <div class="receipt-row">
+                        <span>&nbsp;&nbsp;&nbsp;@AppState.Order.Burger.Cheese</span>
+                        <span>$@CheesePrice().ToString("F2")</span>
+                    </div>
+                }
+                @foreach (var ao in AppState.Order.Burger.AddOnPrices)
+                {
+                    <div class="receipt-row">
+                        <span>&nbsp;&nbsp;&nbsp;+ @ao.Key</span>
+                        <span>$@ao.Value.ToString("F2")</span>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(AppState.Order.Burger.Sauce))
+                {
+                    <div class="receipt-row">
+                        <span>&nbsp;&nbsp;&nbsp;@AppState.Order.Burger.Sauce</span>
+                        <span>@(SaucePrice() == 0 ? "Free" : "$" + SaucePrice().ToString("F2"))</span>
+                    </div>
+                }
+                @if (AppState.Order.Dessert != null)
+                {
+                    <div class="receipt-row">
+                        <span> @AppState.Order.Dessert.Name</span>
+                        <span>$@AppState.Order.Dessert.Price.ToString("F2")</span>
+                    </div>
+                }
+                <div class="receipt-divider"></div>
+                <div class="receipt-row">
+                    <span>Subtotal</span>
+                    <span>$@AppState.Order.GetTotalPrice().ToString("F2")</span>
+                </div>
+                @if (AppState.Customer.IsTeacher)
+                {
+                    <div class="receipt-row">
+                        <span> Teacher Discount (30%)</span>
+                        <span>-$@((AppState.Order.GetTotalPrice() - AppState.Order.GetFinalPrice(true)).ToString("F2"))</span>
+                    </div>
+                }
+                <div class="receipt-row total-row">
+                    <span>TOTAL</span>
+                    <span>$@AppState.Order.GetFinalPrice(AppState.Customer.IsTeacher).ToString("F2")</span>
+                </div>
+                <div class="receipt-row">
+                    <span>Remaining Balance</span>
+                    <span>$@AppState.Customer.Balance.ToString("F2")</span>
+                </div>
+                @if (step == Step.ReviewReceipt)
+                {
+                    <div class="menu-divider"></div>
+                    <button class="submit-menu-btn" @onclick="SubmitFinalOrder">✓ Submit Order</button>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    enum Step { Name, AskTeacher, DrinkMenu, BurgerMenu, AskDessert, DessertMenu, ReviewReceipt, OrderSubmitted }
+
+    record ChatMsg(string Text, bool IsWaitress);
+    record MenuOption(string Name, double Price);
+
+    Step step = Step.Name;
+    List<ChatMsg> messages = new();
+    string userName = "";
+
+    string selectedDrink   = "";
+    string selectedBun     = "";
+    string selectedProtein = "";
+    string selectedCheese  = "";
+    HashSet<string> selectedAddOns = new();
+    string selectedSauce   = "";
+    string selectedDessert = "";
+
+    MenuOption[] drinkOptions = {
+        new("Water",     0.00),
+        new("Soda",      2.00),
+        new("Lemonade",  2.50),
+        new("Iced Tea",  2.00),
+        new("Milkshake", 4.00),
+    };
+
+    MenuOption[] bunOptions = {
+        new("Sesame Seed", 1.00),
+        new("Pretzel",     1.50),
+        new("Brioche",     2.00),
+        new("Whole Wheat", 1.00),
+    };
+
+    MenuOption[] proteinOptions = {
+        new("Beef",    6.00),
+        new("Steak",   8.00),
+        new("Chicken", 5.00),
+    };
+
+    MenuOption[] cheeseOptions = {
+        new("American",    1.00),
+        new("Cheddar",     1.00),
+        new("Swiss",       1.50),
+        new("Pepper Jack", 1.25),
+        new("Provolone",   1.25),
+    };
+
+    MenuOption[] addOnOptions = {
+        new("Bacon",     1.50),
+        new("Jalapeños", 0.50),
+        new("Lettuce",   0.25),
+        new("Tomato",    0.25),
+        new("Onions",    0.25),
+        new("Pickles",   0.25),
+        new("Mushrooms", 0.75),
+        new("Avocado",   1.00),
+    };
+
+    MenuOption[] sauceOptions = {
+        new("Ketchup",      0.00),
+        new("Mustard",      0.00),
+        new("Mayo",         0.00),
+        new("BBQ",          1.00),
+        new("Ranch",        0.50),
+        new("Special Sauce",1.50),
+    };
+
+    MenuOption[] dessertOptions = {
+        new("Ice Cream",  3.00),
+        new("Brownie",    2.50),
+        new("Cheesecake", 4.00),
+        new("Apple Pie",  3.50),
+    };
+
+    protected override void OnInitialized()
+    {
+        messages.Add(new ChatMsg(
+            "Welcome to Olivia's Güd Burgers!" +
+            "What's your name?", true));
+    }
+
+    void SubmitName()
+    {
+        if (string.IsNullOrWhiteSpace(userName)) return;
+        messages.Add(new ChatMsg(userName, false));
+        messages.Add(new ChatMsg(
+            $"Great to meet you, {userName}!  " +
+            "Are you a teacher?", true));
+        step = Step.AskTeacher;
+    }
+
+    void YesTeacher()
+    {
+        AppState.Customer.IsTeacher = true;
+        messages.Add(new ChatMsg("Yes, I am ", false));
+        messages.Add(new ChatMsg(
+            "Teachers get 30% off discount " +
+            "What would you like to drink? " +
+            "Here's our drink menu,just check what you'd like!", true));
+        step = Step.DrinkMenu;
+    }
+
+    void NoTeacher()
+    {
+        AppState.Customer.IsTeacher = false;
+        messages.Add(new ChatMsg("No, I'm not", false));
+        messages.Add(new ChatMsg(
+            "Okay " +
+            "What woudld you like to drink? " +
+            "Here's our drink menu, just check what you'd like!", true));
+        step = Step.DrinkMenu;
+    }
+
+    void SubmitDrink()
+    {
+        if (string.IsNullOrEmpty(selectedDrink)) return;
+        var opt = Array.Find(drinkOptions, d => d.Name == selectedDrink)!;
+        AppState.Order.Drink = new BurgerOrdering.App.Models.Drink(opt.Name, opt.Price, 1);
+        AppState.Customer.Balance -= opt.Price;
+
+        var priceStr = opt.Price == 0 ? "free" : $"${opt.Price:F2}";
+        messages.Add(new ChatMsg($"{selectedDrink} ({priceStr})", false));
+        messages.Add(new ChatMsg(
+            $"Okay, one {selectedDrink} " +
+            "Now build the best burger. " +
+            "Here's the burger menu", true));
+        step = Step.BurgerMenu;
+    }
+
+    bool CanSubmitBurger() =>
+        !string.IsNullOrEmpty(selectedBun) && !string.IsNullOrEmpty(selectedProtein);
+
+    void SubmitBurger()
+    {
+        if (!CanSubmitBurger()) return;
+
+        var burger = new BurgerOrdering.App.Models.Burger
+        {
+            Bun     = selectedBun,
+            Protein = selectedProtein,
+            Cheese  = selectedCheese,
+            Sauce   = selectedSauce,
+        };
+        foreach (var ao in selectedAddOns)
+        {
+            var price = Array.Find(addOnOptions, x => x.Name == ao)!.Price;
+            burger.AddOnPrices[ao] = price;
+        }
+        AppState.Order.Burger = burger;
+        AppState.Customer.Balance -= burger.GetTotalPrice();
+
+        var addOnList = selectedAddOns.Count > 0
+            ? string.Join(", ", selectedAddOns)
+            : "no add-ons";
+        var cheeseStr = string.IsNullOrEmpty(selectedCheese) ? "no cheese" : selectedCheese;
+        var sauceStr  = string.IsNullOrEmpty(selectedSauce)  ? "no sauce"  : selectedSauce;
+
+        messages.Add(new ChatMsg(
+            $"{selectedBun} bun | {selectedProtein} | {cheeseStr} | {addOnList} | {sauceStr}", false));
+        messages.Add(new ChatMsg(
+            $"Perfect, {userName} " +
+            $"Your {selectedProtein} burger on a {selectedBun} bun is going to be amazing " +
+            "Do you want dessert?", true));
+        step = Step.AskDessert;
+    }
+
+    void YesDessert()
+    {
+        messages.Add(new ChatMsg("Yes", false));
+        messages.Add(new ChatMsg(
+            "Okay! Here's the dessert menu", true));
+        step = Step.DessertMenu;
+    }
+
+    void NoDessert()
+    {
+        messages.Add(new ChatMsg("No", false));
+        FinishOrder();
+    }
+
+    void SubmitDessert()
+    {
+        if (string.IsNullOrEmpty(selectedDessert)) return;
+        var opt = Array.Find(dessertOptions, d => d.Name == selectedDessert)!;
+        AppState.Order.Dessert = new BurgerOrdering.App.Models.Dessert(opt.Name, opt.Price, 5);
+        AppState.Customer.Balance -= opt.Price;
+
+        messages.Add(new ChatMsg($"{selectedDessert} (${opt.Price:F2})", false));
+        messages.Add(new ChatMsg(
+            $"Perfect! {selectedDessert} is pretty good." +
+            "It will be ready soon", true));
+        FinishOrder();
+    }
+
+    void FinishOrder()
+    {
+        if (AppState.Customer.IsTeacher)
+        {
+            var discount = AppState.Order.GetTotalPrice() - AppState.Order.GetFinalPrice(true);
+            AppState.Customer.Balance += discount;
+        }
+
+        var finalTotal = AppState.Order.GetFinalPrice(AppState.Customer.IsTeacher);
+        messages.Add(new ChatMsg(
+            $"Here's your receipt, {userName}! 🧾 " +
+            $"Your total comes to ${finalTotal:F2}. " +
+            "Look over it and hit submit when you are ready", true));
+        step = Step.ReviewReceipt;
+    }
+
+    void SubmitFinalOrder()
+    {
+        messages.Add(new ChatMsg("Submit Order ✓", false));
+        messages.Add(new ChatMsg(
+            $"Order submitted. Thank you for coming to get a güd burg.", true));
+        step = Step.OrderSubmitted;
+    }
+
+    double BunPrice()     => bunOptions.FirstOrDefault(b => b.Name == AppState.Order.Burger.Bun)?.Price ?? 0;
+    double ProteinPrice() => proteinOptions.FirstOrDefault(p => p.Name == AppState.Order.Burger.Protein)?.Price ?? 0;
+    double CheesePrice()  => cheeseOptions.FirstOrDefault(c => c.Name == AppState.Order.Burger.Cheese)?.Price ?? 0;
+    double SaucePrice()   => sauceOptions.FirstOrDefault(s => s.Name == AppState.Order.Burger.Sauce)?.Price ?? 0;
+
+    void ToggleAddOn(string name)
+    {
+        if (!selectedAddOns.Remove(name))
+            selectedAddOns.Add(name);
+    }
+}

@@ -1,0 +1,53 @@
+@page "/sides"
+@using BurgerOrdering.App.Models
+@using BurgerOrdering.UI.Services
+@inject NavigationManager Nav
+@inject AppState AppState
+
+<h3>Choose Sides</h3>
+
+<button @onclick="AddFries">Fries ($3)</button>
+<button @onclick="AddRings">Onion Rings ($4)</button>
+
+@if (AppState.Order.Sides.Count > 0)
+{
+    <h4>Your Sides:</h4>
+    <ul>
+        @for (int i = 0; i < AppState.Order.Sides.Count; i++)
+        {
+            var idx = i;
+            <li>@AppState.Order.Sides[idx].Name — $@AppState.Order.Sides[idx].Price.ToString("F2") <button @onclick="() => Remove(idx)">Remove</button></li>
+        }
+    </ul>
+}
+
+<br />
+<button @onclick="Back">Back</button>
+<button @onclick="Next">Next</button>
+
+@code {
+    void AddFries()
+    {
+        AppState.Order.Sides.Add(new Side("Fries", 3, 3));
+    }
+
+    void AddRings()
+    {
+        AppState.Order.Sides.Add(new Side("Onion Rings", 4, 4));
+    }
+
+    void Remove(int index)
+    {
+        AppState.Order.Sides.RemoveAt(index);
+    }
+
+    void Back()
+    {
+        Nav.NavigateTo("/burger");
+    }
+
+    void Next()
+    {
+        Nav.NavigateTo("/drink");
+    }
+}

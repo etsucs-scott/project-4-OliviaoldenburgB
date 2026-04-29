@@ -1,0 +1,36 @@
+@page "/dessert"
+@using BurgerOrdering.App.Models
+@using BurgerOrdering.UI.Services
+@inject NavigationManager Nav
+@inject AppState AppState
+
+<h3>Choose a Dessert</h3>
+
+<button @onclick="AddIceCream">Ice Cream ($3)</button>
+<button @onclick="AddBrownie">Brownie ($2.50)</button>
+
+<br /><br />
+<button @onclick="Back">Back</button>
+<button @onclick="Next">Next</button>
+
+@code {
+    void AddIceCream()
+    {
+        AppState.Order.Dessert = new BurgerOrdering.App.Models.Dessert("Ice Cream", 3, 2);
+    }
+
+    void AddBrownie()
+    {
+        AppState.Order.Dessert = new BurgerOrdering.App.Models.Dessert("Brownie", 2.50, 2);
+    }
+
+    void Back()
+    {
+        Nav.NavigateTo("/drink");
+    }
+
+    void Next()
+    {
+        Nav.NavigateTo("/receipt");
+    }
+}

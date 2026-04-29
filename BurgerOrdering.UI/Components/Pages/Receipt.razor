@@ -1,0 +1,28 @@
+@page "/receipt"
+@using BurgerOrdering.UI.Services
+@inject AppState AppState
+
+<h2>Receipt</h2>
+
+@{
+    var subtotal = AppState.Order.GetTotalPrice();
+    var final = AppState.Order.GetFinalPrice(AppState.Customer.IsTeacher);
+}
+
+@if (AppState.Customer.IsTeacher)
+{
+    <p>Subtotal: $@subtotal.ToString("F2")</p>
+    <p>Teacher Discount (10%): -$@((subtotal - final).ToString("F2"))</p>
+}
+
+<p>Total: $@final.ToString("F2")</p>
+<p>Prep Time: @AppState.Order.GetTotalPrepTime() minutes</p>
+
+@if (final > AppState.Customer.Balance)
+{
+    <p style="color: red;">Warning: this order exceeds your balance of $@AppState.Customer.Balance.ToString("F2").</p>
+}
+else
+{
+    <p>Remaining Balance: $@((AppState.Customer.Balance - final).ToString("F2"))</p>
+}

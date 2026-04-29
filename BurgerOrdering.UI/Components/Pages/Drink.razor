@@ -1,0 +1,47 @@
+@page "/drink"
+@using BurgerOrdering.App.Models
+@using BurgerOrdering.UI.Services
+@inject NavigationManager Nav
+@inject AppState AppState
+
+<h3>Choose a Drink</h3>
+
+<button @onclick="AddWater">Water (free)</button>
+<button @onclick="AddSoda">Soda ($2)</button>
+<button @onclick="AddJuice">Juice ($2.50)</button>
+
+@if (AppState.Order.Drink != null)
+{
+    <p>Selected: @AppState.Order.Drink</p>
+}
+
+<br /><br />
+<button @onclick="Back">Back</button>
+<button @onclick="Next">Next</button>
+
+@code {
+    void AddWater()
+    {
+        AppState.Order.Drink = new BurgerOrdering.App.Models.Drink("Water", 0, 0);
+    }
+
+    void AddSoda()
+    {
+        AppState.Order.Drink = new BurgerOrdering.App.Models.Drink("Soda", 2, 1);
+    }
+
+    void AddJuice()
+    {
+        AppState.Order.Drink = new BurgerOrdering.App.Models.Drink("Juice", 2.50, 1);
+    }
+
+    void Back()
+    {
+        Nav.NavigateTo("/sides");
+    }
+
+    void Next()
+    {
+        Nav.NavigateTo("/dessert");
+    }
+}

@@ -1,0 +1,31 @@
+@page "/teacher"
+@using BurgerOrdering.UI.Services
+@inject NavigationManager Nav
+@inject AppState AppState
+
+<h3>Are you a teacher?</h3>
+
+<button @onclick="Yes">Yes</button>
+<button @onclick="No">No</button>
+
+<br /><br />
+<button @onclick="Back">Back</button>
+
+@code {
+    void Yes()
+    {
+        AppState.Customer.IsTeacher = true;
+        Nav.NavigateTo("/burger");
+    }
+
+    void No()
+    {
+        AppState.Customer.IsTeacher = false;
+        Nav.NavigateTo("/burger");
+    }
+
+    void Back()
+    {
+        Nav.NavigateTo("/");
+    }
+}
