@@ -1,5 +1,5 @@
 namespace BurgerOrdering.App.Models;
-
+// Stores the full order including burger, sides, and dessert
 public class Order
 {
     public Burger Burger { get; set; } = new Burger();

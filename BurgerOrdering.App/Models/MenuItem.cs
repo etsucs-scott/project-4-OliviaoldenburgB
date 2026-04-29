@@ -1,5 +1,5 @@
 namespace BurgerOrdering.App.Models;
-
+// Base class for menu items with common properties
 public abstract class MenuItem
 {
     public string Name { get; set; }

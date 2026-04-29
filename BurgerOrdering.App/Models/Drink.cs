@@ -1,5 +1,5 @@
 namespace BurgerOrdering.App.Models;
-
+// Represents a drink option for the order
 public class Drink : MenuItem
 {
     public string Flavor { get; set; }

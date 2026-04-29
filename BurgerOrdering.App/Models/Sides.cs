@@ -1,5 +1,5 @@
 namespace BurgerOrdering.App.Models;
-
+// Represents a side item with name, price, and prep time
 public class Side : MenuItem
 {
     public Side(string name, double price, int prepTime)

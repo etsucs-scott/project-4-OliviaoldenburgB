@@ -4,6 +4,8 @@
 @using BurgerOrdering.UI.Services
 @inject AppState AppState
 
+// Starting page where the user begins their order
+
 <div class="chat-wrapper">
     <div class="top-bar">
         <span class="restaurant-title"> Olivia's Güd Burgers</span>
@@ -175,7 +177,7 @@
                 @if (AppState.Order.Drink != null)
                 {
                     <div class="receipt-row">
-                        <span>🥤 @AppState.Order.Drink.Name</span>
+                        <span> @AppState.Order.Drink.Name</span>
                         <span>@(AppState.Order.Drink.Price == 0 ? "Free" : "$" + AppState.Order.Drink.Price.ToString("F2"))</span>
                     </div>
                 }
@@ -323,7 +325,7 @@
     {
         messages.Add(new ChatMsg(
             "Welcome to Olivia's Güd Burgers!" +
-            "What's your name?", true));
+            " What's your name?", true));
     }
 
     void SubmitName()
@@ -449,7 +451,7 @@
 
         var finalTotal = AppState.Order.GetFinalPrice(AppState.Customer.IsTeacher);
         messages.Add(new ChatMsg(
-            $"Here's your receipt, {userName}! 🧾 " +
+            $"Here's your receipt, {userName}!  " +
             $"Your total comes to ${finalTotal:F2}. " +
             "Look over it and hit submit when you are ready", true));
         step = Step.ReviewReceipt;
@@ -459,7 +461,7 @@
     {
         messages.Add(new ChatMsg("Submit Order ✓", false));
         messages.Add(new ChatMsg(
-            $"Order submitted. Thank you for coming to get a güd burg.", true));
+            $"Order submitted. Thank you for coming to get a güd burg.j", true));
         step = Step.OrderSubmitted;
     }
 

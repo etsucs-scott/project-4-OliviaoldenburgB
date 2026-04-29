@@ -1,5 +1,5 @@
 namespace BurgerOrdering.App.Models;
-
+// Stores the burger selections and calculates price and prep time
 public class Burger
 {
     public string Bun { get; set; } = "";
