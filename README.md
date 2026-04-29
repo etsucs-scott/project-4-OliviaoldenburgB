@@ -1,43 +1,91 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/qJo95Bxr)
-# CSCI 1260 — Project
+# Burger Ordering Application
 
-## Project Instructions
-All project requirements, grading criteria, and submission details are provided on **D2L**.  
-Refer to D2L as the *authoritative source* for this assignment.
+## Overview
 
-This repository is intentionally minimal. You are responsible for:
-- Creating the solution and projects
-- Designing the class structure
-- Implementing the required functionality
+This project is a multi-page burger ordering system built using ASP.NET Core Blazor.  
+It allows users to customize a burger, select sides and desserts, and view a final receipt.  
+The application demonstrates component-based design, state management, and interactive UI behavior.
 
 ---
 
-## Getting Started (CLI)
+## Features
 
-You may use **Visual Studio**, **VS Code**, or the **terminal**.
+- Start an order from the home page  
+- Indicate whether the customer is a teacher  
+- Customize a burger (protein, cheese, sauce, add-ons)  
+- Select multiple side items  
+- Choose a dessert or skip  
+- View a receipt with total price and estimated preparation time  
+- Shared application state across all pages  
 
-### Create a solution
-```bash
-dotnet new sln -n ProjectName
-```
+---
 
-### Create a project (example: console app)
-```bash
-dotnet new console -n ProjectName.App
-```
+## Technologies Used
 
-### Add the project to the solution
-```bash
-dotnet sln add ProjectName.App
-```
+- ASP.NET Core Blazor (Interactive Server)  
+- C#  
+- Razor Components  
+- .NET 8/9  
 
-### Build and run
-```bash
-dotnet build
-dotnet run --project ProjectName.App
-```
+---
+
+## Project Structure
+
+BurgerOrdering.App  
+Contains the data models:
+- Burger  
+- Customer  
+- Order  
+- Sides  
+- Dessert  
+
+BurgerOrdering.UI  
+Contains the user interface:
+- Components  
+  - Pages (Home, Teacher, Burger, Sides, Dessert, Receipt)  
+  - Layout (MainLayout, NavMenu)  
+- Services  
+  - AppState (shared state across pages)  
+
+---
+
+## How to Run
+
+1. Open the project in Visual Studio Code  
+2. Open a terminal in the project folder  
+3. Run the following command:
+
+   dotnet run --project BurgerOrdering.UI
+
+4. Open a browser and go to:
+
+   http://localhost:5116  
+
+---
+
+## How It Works
+
+The application uses a shared service called AppState to store the current order.  
+Each page updates part of the order and navigates to the next step.
+
+Flow:  
+Home → Teacher → Burger → Sides → Dessert → Receipt  
+
+---
+
+## Key Concepts Demonstrated
+
+- Razor components and routing  
+- Event handling with @onclick and @onchange  
+- Dependency injection  
+- Shared state using services  
+- Navigation between pages  
+
+---
 
 ## Notes
-- Commit early and commit often.
-- Your repository history is part of your submission.
-- Update this README with build/run instructions specific to your project.
+
+- The project uses Blazor Interactive Server mode for real-time UI updates.  
+- All selections are stored in memory for the duration of the session.  
+- No database is required.  
+
