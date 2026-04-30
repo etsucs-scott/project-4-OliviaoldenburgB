@@ -1,4 +1,5 @@
 namespace BurgerOrdering.App.Models;
+
 // Stores the full order including burger, sides, and dessert
 public class Order
 {
@@ -9,9 +10,12 @@ public class Order
 
     public double GetTotalPrice()
     {
-        double total = Burger.GetTotalPrice();
+        double total = 0;
 
-        foreach (var side in Sides)
+        if (Burger != null)
+            total += Burger.GetTotalPrice();
+
+        foreach (var side in Sides ?? new List<Side>())
             total += side.Price;
 
         if (Drink != null)
@@ -31,9 +35,12 @@ public class Order
 
     public int GetTotalPrepTime()
     {
-        int time = Burger.GetPrepTime();
+        int time = 0;
 
-        foreach (var side in Sides)
+        if (Burger != null)
+            time += Burger.GetPrepTime();
+
+        foreach (var side in Sides ?? new List<Side>())
             time += side.PrepTime;
 
         if (Drink != null)
@@ -43,5 +50,11 @@ public class Order
             time += Dessert.PrepTime;
 
         return time;
+    }
+
+    // 🔥 Used when loading from file to validate data
+    public bool IsValid()
+    {
+        return Burger != null;
     }
 }

@@ -3,6 +3,8 @@
 @using BurgerOrdering.App.Models
 @using BurgerOrdering.UI.Services
 @inject AppState AppState
+@using BurgerOrdering.App.Services
+@inject FileService FileService
 
 // Starting page where the user begins their order
 
@@ -321,8 +323,23 @@
         new("Apple Pie",  3.50),
     };
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        try
+        {
+            AppState.Customer = await FileService.LoadCustomerAsync();
+
+            var orders = await FileService.LoadOrdersAsync();
+            if (orders.Any())
+            {
+                AppState.Order = orders.Last();
+            }
+        }
+        catch (Exception ex)
+        {
+            messages.Add(new ChatMsg("⚠️ Error loading saved data.", true));
+        }
+
         messages.Add(new ChatMsg(
             "Welcome to Olivia's Güd Burgers!" +
             " What's your name?", true));
@@ -365,8 +382,15 @@
         if (string.IsNullOrEmpty(selectedDrink)) return;
         var opt = Array.Find(drinkOptions, d => d.Name == selectedDrink)!;
         AppState.Order.Drink = new BurgerOrdering.App.Models.Drink(opt.Name, opt.Price, 1);
-        AppState.Customer.Balance -= opt.Price;
-
+        try
+        {
+            AppState.Customer.Deduct(opt.Price);
+        }
+        catch (Exception ex)
+        {
+            messages.Add(new ChatMsg("⚠️ Not enough balance.", true));
+            return;
+        }
         var priceStr = opt.Price == 0 ? "free" : $"${opt.Price:F2}";
         messages.Add(new ChatMsg($"{selectedDrink} ({priceStr})", false));
         messages.Add(new ChatMsg(
@@ -396,8 +420,16 @@
             burger.AddOnPrices[ao] = price;
         }
         AppState.Order.Burger = burger;
-        AppState.Customer.Balance -= burger.GetTotalPrice();
-
+        double burgerCost = burger.GetTotalPrice();
+        try
+        {
+            AppState.Customer.Deduct(burgerCost);
+        }
+        catch (Exception ex)
+        {
+            messages.Add(new ChatMsg("⚠️ Not enough balance.", true));
+            return;
+        }
         var addOnList = selectedAddOns.Count > 0
             ? string.Join(", ", selectedAddOns)
             : "no add-ons";
@@ -432,8 +464,15 @@
         if (string.IsNullOrEmpty(selectedDessert)) return;
         var opt = Array.Find(dessertOptions, d => d.Name == selectedDessert)!;
         AppState.Order.Dessert = new BurgerOrdering.App.Models.Dessert(opt.Name, opt.Price, 5);
-        AppState.Customer.Balance -= opt.Price;
-
+        try
+        {
+            AppState.Customer.Deduct(opt.Price);
+        }
+        catch (Exception ex)
+        {
+            messages.Add(new ChatMsg("⚠️ Not enough balance.", true));
+            return;
+        }
         messages.Add(new ChatMsg($"{selectedDessert} (${opt.Price:F2})", false));
         messages.Add(new ChatMsg(
             $"Perfect! {selectedDessert} is pretty good." +
@@ -457,13 +496,31 @@
         step = Step.ReviewReceipt;
     }
 
-    void SubmitFinalOrder()
+    async Task SubmitFinalOrder()
+{
+    try
     {
+        var orders = await FileService.LoadOrdersAsync();
+        orders.Add(AppState.Order);
+
+        await FileService.SaveOrdersAsync(orders);
+
+        // 🔥 RESET BALANCE HERE
+        AppState.Customer.Balance = 20;
+
+        await FileService.SaveCustomerAsync(AppState.Customer);
+
         messages.Add(new ChatMsg("Submit Order ✓", false));
         messages.Add(new ChatMsg(
-            $"Order submitted. Thank you for coming to get a güd burg.j", true));
+            $"Order submitted. Thank you for coming to get a güd burger!", true));
+
         step = Step.OrderSubmitted;
     }
+    catch (Exception ex)
+    {
+        messages.Add(new ChatMsg("⚠️ Error saving your order.", true));
+    }
+}
 
     double BunPrice()     => bunOptions.FirstOrDefault(b => b.Name == AppState.Order.Burger.Bun)?.Price ?? 0;
     double ProteinPrice() => proteinOptions.FirstOrDefault(p => p.Name == AppState.Order.Burger.Protein)?.Price ?? 0;

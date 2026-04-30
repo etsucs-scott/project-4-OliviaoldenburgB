@@ -1,0 +1,41 @@
+[
+  {
+    "Burger": {
+      "Bun": "Sesame Seed",
+      "Protein": "Chicken",
+      "Cheese": "Pepper Jack",
+      "Sauce": "Ketchup",
+      "AddOnPrices": {
+        "Jalape\u00F1os": 0.5
+      }
+    },
+    "Sides": [],
+    "Drink": {
+      "Flavor": "",
+      "Name": "Water",
+      "Price": 0,
+      "PrepTime": 1
+    },
+    "Dessert": null
+  },
+  {
+    "Burger": {
+      "Bun": "Pretzel",
+      "Protein": "Beef",
+      "Cheese": "Provolone",
+      "Sauce": "Mayo",
+      "AddOnPrices": {
+        "Jalape\u00F1os": 0.5,
+        "Pickles": 0.25
+      }
+    },
+    "Sides": [],
+    "Drink": {
+      "Flavor": "",
+      "Name": "Lemonade",
+      "Price": 2.5,
+      "PrepTime": 1
+    },
+    "Dessert": null
+  }
+]
